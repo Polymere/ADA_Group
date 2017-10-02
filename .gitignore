@@ -1,0 +1,2 @@
+# Ignore local saves of iPython notebooks
+.ipynb_checkpoints/
