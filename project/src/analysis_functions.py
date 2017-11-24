@@ -24,6 +24,18 @@ def is_numeric(x):
         else:
             return False
 
+    elif isinstance(x, int):
+        if np.isnan(x):
+            return False
+        else:
+            return True
+
+    elif isinstance(x, float):
+        if np.isnan(x):
+            return False
+        else:
+            return True
+
     return False
 
 
@@ -42,7 +54,7 @@ def data_to_datatype_str(x):
         ['other-' + type(x).__name__]
 
 
-def print_data_types(rdd):
+def get_data_types(rdd):
     """
 
     :param rdd:
@@ -72,14 +84,20 @@ def numeric_array_or_matrix_histogram(rdd, number_of_buckets=100):
 
     flattened_rdd = filtered_rdd.flatMap(flatten)
 
-    _min = flattened_rdd.min()
-    _max = flattened_rdd.max()
+    _min, _max, histogram = get_histogram(flattened_rdd, number_of_buckets)
 
-    histogram = flattened_rdd.histogram(
+    return _min, _max, histogram, number_of_filtered_elements
+
+
+def get_histogram(rdd, number_of_buckets=100):
+    _min = rdd.min()
+    _max = rdd.max()
+
+    histogram = rdd.histogram(
         buckets=[
             i for i in
             np.arange(_min, _max, (float(_max) - float(_min)) / (float(number_of_buckets) + 1.0))
         ]
     )
 
-    return _min, _max, histogram, number_of_filtered_elements
+    return _min, _max, histogram

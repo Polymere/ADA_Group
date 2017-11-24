@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 from pyspark import SparkContext
 
-from analysing_data import numeric_array_or_matrix_histogram
+from analysis_functions import numeric_array_or_matrix_histogram
 
 
 def print_histogram(histogram, number_of_labels=10):
