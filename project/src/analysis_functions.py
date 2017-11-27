@@ -1,6 +1,7 @@
 import numpy as np
 from pyspark import RDD
 from operator import add
+import numpy as np
 
 
 def is_array(x):
@@ -40,7 +41,7 @@ def is_numeric(x):
 
 
 def flatten(x):
-    return [i for i in x]
+    return [i for i in np.ravel(x)]
 
 
 def data_to_datatype_str(x):
@@ -80,13 +81,13 @@ def numeric_array_or_matrix_histogram(rdd, number_of_buckets=100):
     """
 
     filtered_rdd = rdd.map(lambda t: t[1]).filter(lambda x: is_array(x) or is_matrix(x)).filter(is_numeric)
-    number_of_filtered_elements = rdd.count() - filtered_rdd.count()
+    # number_of_filtered_elements = rdd.count() - filtered_rdd.count()
 
     flattened_rdd = filtered_rdd.flatMap(flatten)
 
     _min, _max, histogram = get_histogram(flattened_rdd, number_of_buckets)
 
-    return _min, _max, histogram, number_of_filtered_elements
+    return _min, _max, histogram
 
 
 def get_histogram(rdd, number_of_buckets=100):
