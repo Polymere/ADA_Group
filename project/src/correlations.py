@@ -36,7 +36,7 @@ def scatter_plot_with_song_hotness_and_year(rdd, metadata_songs_rdd, music_brain
 
 
 def correlation_artist_hotness(sc):
-    metadata_songs_rdd = sc.pickleFile(r'C:\Users\marc_\Documents\Prog\ADA_Group\project\data\metadata-songs')
+    metadata_songs_rdd = sc.pickleFile(r'../data/metadata-songs')
     artist_hotness = metadata_songs_rdd.map(
         lambda x: (x[0], x[1]['song_hotttnesss'][0])
     ).filter(lambda x: is_numeric(x[1]))
@@ -44,8 +44,8 @@ def correlation_artist_hotness(sc):
 
 
 def correlation_tempo(sc):
-    analysis = sc.pickleFile(r'C:\Users\marc_\Documents\Prog\ADA_Group\project\data\analysis-songs')
-    metadata_songs_rdd = sc.pickleFile(r'C:\Users\marc_\Documents\Prog\ADA_Group\project\data\metadata-songs')
+    analysis = sc.pickleFile(r'../data/analysis-songs')
+    metadata_songs_rdd = sc.pickleFile(r'../data/metadata-songs')
     tempo = analysis.map(lambda x: (x[0], x[1]['tempo'][0])).filter(lambda x: is_numeric(x[1]))
     scatter_plot_with_song_hotness(tempo, metadata_songs_rdd)
 

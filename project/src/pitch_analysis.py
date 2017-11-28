@@ -64,3 +64,61 @@ def get_most_popular_pitches_from_rdd(analysis_segments_pitch, top=10, threshold
                             get_most_popular_pitches_from_matrix(x[1], threshold, top_per_song, use_chord_structure)
                             ]) \
         .reduceByKey(add).top(top, key=lambda x: x[1])
+
+
+def get_most_popular_pitches_sequence_from_matrix(pitch_matrix, sequence_length, threshold=0.75, top=3,
+                                                  normalize=True):
+    """
+    :param pitch_matrix:
+    :return:
+    :type
+    pitch_matrix: np.matrix
+    """
+    number_of_segment_sequence = pitch_matrix.shape[0] - sequence_length + 1
+    main_pitches = pitch_matrix > threshold
+    pitch_multiset = dict()
+    for i in range(number_of_segment_sequence):
+        pitch = tuple([x for x in np.ravel(main_pitches[i:i + sequence_length, :])])
+        if normalize:
+            pitch = normalize_sequence(pitch)
+
+        if pitch in pitch_multiset:
+            pitch_multiset[pitch] = pitch_multiset[pitch] + 1
+        else:
+            pitch_multiset[pitch] = 1
+
+    out = [(pitch_multiset[key], key) for key in pitch_multiset.keys()]
+    out.sort(key=lambda x: x[0], reverse=True)
+    return [x[1] for x in out[:top]]
+
+
+def get_most_popular_pitches_sequence_from_rdd(analysis_segments_pitch, sequence_length, top=10, threshold=0.75,
+                                               top_per_song=3, normalize=True):
+    return analysis_segments_pitch \
+        .flatMap(lambda x: [(p, 1) for p in
+                            get_most_popular_pitches_sequence_from_matrix(x[1], sequence_length, threshold,
+                                                                      top_per_song, normalize)
+                            ]) \
+        .reduceByKey(add).top(top, key=lambda x: x[1])
+
+
+def pretty_print_sequence(sequence):
+    n = len(sequence) / 12
+    for i in range(n):
+        print('(' + ' ,'.join(['1' if x else '0' for x in sequence[i * 12:(i + 1) * 12]]) + ')')
+
+
+def pretty_print_sequence_list(sequence_list):
+    for i in range(len(sequence_list)):
+        print('Sequence ' + str(i) + ' with ' + str(sequence_list[i][1]) + ' occurrences')
+        pretty_print_sequence(sequence_list[i][0])
+        print()
+
+
+def normalize_sequence(pitch_sequence):
+    n = len(pitch_sequence) / 12
+    offset = _find_longest_true_sequence_position(pitch_sequence[:12])
+    out = []
+    for i in range(n):
+        out = out + [x for x in np.roll(pitch_sequence[i * 12:(i + 1) * 12], -offset)]
+    return tuple(out)
