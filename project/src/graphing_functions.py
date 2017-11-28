@@ -6,7 +6,7 @@ from pyspark import SparkContext
 from analysis_functions import numeric_array_or_matrix_histogram
 
 
-def print_histogram(histogram, number_of_labels=10):
+def print_histogram(histogram, number_of_labels=10, title=""):
     n = len(histogram[1])
     sns.set(font_scale=0.75)
     barplot = sns.barplot(range(n), histogram[1])
@@ -15,6 +15,7 @@ def print_histogram(histogram, number_of_labels=10):
         np.interp(float(n + 1) * float(i) / float(number_of_labels), range(n + 1), histogram[0])
         for i in range(number_of_labels)
     ]))
+    barplot.set_title(title)
     plt.show()
 
 
