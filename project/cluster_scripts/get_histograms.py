@@ -1,11 +1,9 @@
 from cluster_utils import get_rdd
-from src.analysis_functions import get_histogram
 from pyspark import SparkContext
 import src.analysis_functions as analysis_functions
 import pickle
 
-#OUT_PATH = '/buffer/mrp_buffer/'
-OUT_PATH = 'test_hist_out/'
+OUT_PATH = '/buffer/mrp_buffer/histograms/'
 
 
 def simple_hist_preparation(rdd, field_name):
@@ -20,13 +18,13 @@ def get_and_save_histogram(rdd, out_file_name):
 
 if __name__ == "__main__":
     sc = SparkContext(appName='GetHistogramsOfData')
-    DATA_DIR = 'data/'
-    music_brainz_rdd = sc.pickleFile(DATA_DIR + 'musicbrainz-songs')
-    analysis_songs_rdd = sc.pickleFile(DATA_DIR + 'analysis-songs')
-    metadata_songs_rdd = sc.pickleFile(DATA_DIR + 'metadata-songs')
-    # music_brainz_rdd = get_rdd('musicbrainz-songs', sc)
-    # analysis_songs_rdd = get_rdd('analysis-songs', sc)
-    # metadata_songs_rdd = get_rdd('metadata-songs', sc)
+    # DATA_DIR = 'data/'
+    # music_brainz_rdd = sc.pickleFile(DATA_DIR + 'musicbrainz-songs')
+    # analysis_songs_rdd = sc.pickleFile(DATA_DIR + 'analysis-songs')
+    # metadata_songs_rdd = sc.pickleFile(DATA_DIR + 'metadata-songs')
+    music_brainz_rdd = get_rdd('musicbrainz-songs', sc)
+    analysis_songs_rdd = get_rdd('analysis-songs', sc)
+    metadata_songs_rdd = get_rdd('metadata-songs', sc)
     hotness = simple_hist_preparation(metadata_songs_rdd, 'song_hotttnesss')
     danceability = simple_hist_preparation(analysis_songs_rdd, 'danceability')
     duration = simple_hist_preparation(analysis_songs_rdd, 'duration')
@@ -39,16 +37,14 @@ if __name__ == "__main__":
     longitude = simple_hist_preparation(metadata_songs_rdd, 'artist_longitude')
     year = simple_hist_preparation(music_brainz_rdd, 'year')
 
-    get_and_save_histogram(hotness, 'hotness')
-    get_and_save_histogram(danceability, 'danceability')
-    get_and_save_histogram(duration, 'duration')
-    get_and_save_histogram(energy, 'energy')
-    get_and_save_histogram(key, 'key')
-    get_and_save_histogram(loudness, 'loudness')
-    get_and_save_histogram(tempo, 'tempo')
-    get_and_save_histogram(time_signature, 'time_signature')
-    get_and_save_histogram(latitude, 'latitude')
-    get_and_save_histogram(longitude, 'longitude')
-    get_and_save_histogram(year, 'year')
-
-
+    get_and_save_histogram(hotness, 'hotness-global')
+    get_and_save_histogram(danceability, 'danceability-global')
+    get_and_save_histogram(duration, 'duration-global')
+    get_and_save_histogram(energy, 'energy-global')
+    get_and_save_histogram(key, 'key-global')
+    get_and_save_histogram(loudness, 'loudness-global')
+    get_and_save_histogram(tempo, 'tempo-global')
+    get_and_save_histogram(time_signature, 'time_signature-global')
+    get_and_save_histogram(latitude, 'latitude-global')
+    get_and_save_histogram(longitude, 'longitude-global')
+    get_and_save_histogram(year, 'year-global')
