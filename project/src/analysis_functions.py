@@ -91,8 +91,16 @@ def numeric_array_or_matrix_histogram(rdd, number_of_buckets=100):
 
 
 def get_histogram(rdd, number_of_buckets=100):
-    _min = rdd.min()
-    _max = rdd.max()
+    try:
+        _min = rdd.min()
+        _max = rdd.max()
+    except ValueError:
+        print("Empty rdd")
+        return None, None, None
+
+    if _min == _max:
+        print("min == max, no histogram possible")
+        return None, None, None
 
     histogram = rdd.histogram(
         buckets=[
