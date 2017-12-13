@@ -17,9 +17,13 @@ def correlation_preparation(rdd, field_name):
 def calculate_correlation(rdd1, rdd2, method="pearson"):
     # we join to keep only the element we have in common
     rdd = rdd1.join(rdd2)
+    n = rdd.count()
+    if n == 0:
+        return {'corr': 0, 'nb_elements': 0}
+
     return {
         'corr': Statistics.corr(rdd.map(lambda x: x[1][0]), rdd.map(lambda x: x[1][1]), method=method),
-        'nb_elements': rdd.count()
+        'nb_elements': n
     }
 
 
