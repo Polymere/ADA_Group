@@ -37,6 +37,9 @@ def is_numeric(x):
         else:
             return True
 
+    elif np.isreal(x):
+        return True
+
     return False
 
 

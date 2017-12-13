@@ -2,13 +2,15 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 import numpy as np
 from pyspark import SparkContext
+import matplotlib.pyplot as pyplot
 
 from analysis_functions import numeric_array_or_matrix_histogram
 
 
-def print_histogram(histogram, number_of_labels=10, title=""):
+def print_histogram(histogram, number_of_labels=10, title="", figsize=(8, 6), dpi=80):
     n = len(histogram[1])
     sns.set(font_scale=0.75)
+    fig, ax = pyplot.subplots(figsize=figsize, dpi=dpi)
     barplot = sns.barplot(range(n), histogram[1])
     barplot.set_xticks(np.arange(0, n + 1, float(n + 1) / number_of_labels))
     barplot.set_xticklabels(format_labels([
