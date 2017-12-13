@@ -3,8 +3,12 @@ from cluster_utils import get_rdd
 import analysis_functions
 from pyspark.mllib.stat import Statistics
 import pickle
+import math
+from operator import add
 
 OUT_PATH = '/buffer/mrp_buffer/correlations/'
+
+
 # OUT_PATH = 'test/'
 
 
@@ -27,8 +31,7 @@ def calculate_correlation(rdd1, rdd2, method="pearson"):
     }
 
 
-if __name__ == "__main__":
-    sc = SparkContext(appName='CorrelationOfData')
+def load_data(sc):
     # DATA_DIR = 'data/'
     # music_brainz_rdd = sc.pickleFile(DATA_DIR + 'musicbrainz-songs')
     # analysis_songs_rdd = sc.pickleFile(DATA_DIR + 'analysis-songs')
@@ -47,7 +50,12 @@ if __name__ == "__main__":
         'longitude': correlation_preparation(metadata_songs_rdd, 'artist_longitude'),
         'year': correlation_preparation(music_brainz_rdd, 'year'),
     }
+    return data
 
+
+def correlation_calculations():
+    sc = SparkContext(appName='CorrelationOfData')
+    data = load_data(sc)
     correlations = dict()
     for i in ['duration', 'key', 'loudness', 'tempo', 'time_signature', 'latitude', 'longitude', 'year']:
         correlations[i] = calculate_correlation(data['hotness'], data[i])
@@ -66,3 +74,68 @@ if __name__ == "__main__":
 
     with open(OUT_PATH + 'correlations-per-year', 'wb') as out_file:
         pickle.dump(correlations, out_file)
+
+
+class EqualClassSampling:
+    def __init__(self, nb_class=10):
+        self.elements_per_class = dict()
+        self.class_divider = 1.0 / float(nb_class)
+        self.nb_class = nb_class
+
+    def get_class(self, hotness):
+        return int(math.floor(hotness / self.class_divider))
+
+    def calculate_nb_elements_per_class(self, hotness_rdd):
+        self.elements_per_class = dict()
+        for _class, nb in hotness_rdd.map(lambda x: (self.get_class(x[1]), 1)).reduceByKey(add).collect():
+            self.elements_per_class[_class] = nb
+
+    def sample(self, hotness_rdd, desired_el_per_class):
+        """
+        :return: an rdd (id, (hotness, class))
+        """
+        desired_el_per_class = float(desired_el_per_class)
+        return hotness_rdd \
+            .map(lambda x: (self.get_class(x[1]), x)) \
+            .sampleByKey(False,
+                         {
+                             i: 1 if self.elements_per_class[i] <= desired_el_per_class
+                             else desired_el_per_class / float(self.elements_per_class[i])
+                             for i in self.elements_per_class.keys()
+                         }) \
+            .map(lambda x: (x[1][0], (x[1][1], x[0])))
+
+
+def sampled_points():
+    sc = SparkContext(appName='CorrelationOfData')
+    sampler = EqualClassSampling()
+    data = load_data(sc)
+    for i in ['duration', 'key', 'loudness', 'tempo', 'time_signature', 'latitude', 'longitude', 'year']:
+        # selecting the tuples in common
+        rdd = data['hotness'].join(data[i])
+        # finding the classes so that they each contain about the same number of elements
+        hotness_rdd = rdd.map(lambda x: (x[0], x[1][0]))
+        sampler.calculate_nb_elements_per_class(hotness_rdd)
+        sampled_hotness_rdd = sampler.sample(hotness_rdd, 200)
+        points = sampled_hotness_rdd.join(data[i]).map(lambda x: (x[1][0][0], x[1][1], x[1][0][1])).collect()
+        with open(OUT_PATH + 'sampled-points-' + i, 'wb') as out_file:
+            pickle.dump({'points': points, 'original_el_per_class': sampler.elements_per_class}, out_file)
+
+    for year in range(1922, 2018):
+        y = data['year'].filter(lambda x: x[1] == year)
+        for i in ['duration', 'key', 'loudness', 'tempo', 'time_signature', 'latitude', 'longitude', 'year']:
+            # selecting the tuples in common
+            rdd = data['hotness'].join(data[i]).join(y).map(lambda x: (x[0], x[1][0]))
+            if rdd.count() < 10:
+                continue
+            # finding the classes so that they each contain about the same number of elements
+            hotness_rdd = rdd.map(lambda x: (x[0], x[1][0]))
+            sampler.calculate_nb_elements_per_class(hotness_rdd)
+            sampled_hotness_rdd = sampler.sample(hotness_rdd, 200)
+            points = sampled_hotness_rdd.join(data[i]).map(lambda x: (x[1][0][0], x[1][1], x[1][0][1])).collect()
+            with open(OUT_PATH + 'sampled-points-' + str(year) + '-' + i, 'wb') as out_file:
+                pickle.dump({'points': points, 'original_el_per_class': sampler.elements_per_class}, out_file)
+
+
+if __name__ == "__main__":
+    sampled_points()
