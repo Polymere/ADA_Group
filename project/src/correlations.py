@@ -3,8 +3,8 @@ from cluster_utils import get_rdd
 import analysis_functions
 from pyspark.mllib.stat import Statistics
 import pickle
-import math
-from operator import add
+
+from sampling import EqualClassSampling
 
 OUT_PATH = '/buffer/mrp_buffer/correlations/'
 
@@ -24,6 +24,9 @@ def calculate_correlation(rdd1, rdd2, method="pearson"):
     n = rdd.count()
     if n == 0:
         return {'corr': 0, 'nb_elements': 0}
+
+    if n == 1:
+        return {'corr': 0, 'nb_elements': 1}
 
     return {
         'corr': Statistics.corr(rdd.map(lambda x: x[1][0]), rdd.map(lambda x: x[1][1]), method=method),
@@ -74,36 +77,6 @@ def correlation_calculations():
 
     with open(OUT_PATH + 'correlations-per-year', 'wb') as out_file:
         pickle.dump(correlations, out_file)
-
-
-class EqualClassSampling:
-    def __init__(self, nb_class=10):
-        self.elements_per_class = dict()
-        self.class_divider = 1.0 / float(nb_class)
-        self.nb_class = nb_class
-
-    def get_class(self, hotness):
-        return int(math.floor(hotness / self.class_divider))
-
-    def calculate_nb_elements_per_class(self, hotness_rdd):
-        self.elements_per_class = dict()
-        for _class, nb in hotness_rdd.map(lambda x: (self.get_class(x[1]), 1)).reduceByKey(add).collect():
-            self.elements_per_class[_class] = nb
-
-    def sample(self, hotness_rdd, desired_el_per_class):
-        """
-        :return: an rdd (id, (hotness, class))
-        """
-        desired_el_per_class = float(desired_el_per_class)
-        return hotness_rdd \
-            .map(lambda x: (self.get_class(x[1]), x)) \
-            .sampleByKey(False,
-                         {
-                             i: 1 if self.elements_per_class[i] <= desired_el_per_class
-                             else desired_el_per_class / float(self.elements_per_class[i])
-                             for i in self.elements_per_class.keys()
-                         }) \
-            .map(lambda x: (x[1][0], (x[1][1], x[0])))
 
 
 def sampled_points():

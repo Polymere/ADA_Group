@@ -25,6 +25,16 @@ def format_labels(labels):
     return [format(i, '.2e') for i in labels]
 
 
+def print_sampled_points(sampled_points, title=""):
+    x = [i[0] for i in sampled_points['points']]
+    y = [i[1] for i in sampled_points['points']]
+    fig = plt.figure()
+    ax = fig.add_subplot(111)
+    ax.plot(x, y, '.')
+    ax.set_title(title)
+    plt.show()
+
+
 def scatter_plot_with_song_hotness(rdd, metadata_songs_rdd, number_of_points=500):
     """
     :type rdd: RDD
