@@ -53,7 +53,7 @@ def equal_class_sampling_on_names(nb_per_class):
     title = metadata_songs_rdd.map(lambda x: (x[0], (x[1]['artist_name'][0], x[1]['title'][0])))
     sampler.calculate_nb_elements_per_class(hotness_rdd)
     sampled_hotness_rdd = sampler.sample(hotness_rdd, nb_per_class)
-    out = title.join(sampled_hotness_rdd).map(lambda x: (x[1][0][0], x[1][0][1], x[1][1][0], x[1][1][1])).collect()
+    out = title.join(sampled_hotness_rdd).map(lambda x: (x[0], x[1][0][0], x[1][0][1], x[1][1][0], x[1][1][1])).collect()
     with open(OUT_PATH + 'name_sampling', 'wb') as out_file:
         pickle.dump(out, out_file)
 
