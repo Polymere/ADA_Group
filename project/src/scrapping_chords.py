@@ -3,6 +3,7 @@ from bs4 import BeautifulSoup
 import numpy as np
 import urllib
 import re
+import pickle
 
 
 def get_chords(url):
@@ -35,7 +36,7 @@ def get_chords_and_lyrics(url):
                 lyrics.append(str(parsed_list[i]))
             i += 1
         if lyrics:
-            out.append(lyrics)
+            out.append(tuple([False] + lyrics))
 
         chords = []
         while i < len(parsed_list) and (parsed_list[i].name == 'span' or SPACE_RE.match(str(parsed_list[i]))):
@@ -43,7 +44,7 @@ def get_chords_and_lyrics(url):
                 chords.append(str(parsed_list[i].text))
             i += 1
         if chords:
-            out.append(chords)
+            out.append(tuple([True] + chords))
 
         # error handling in case it's a html tag we didn't expect
         if i < len(parsed_list) and parsed_list[i].name != 'span' and parsed_list[i].name is not None:
@@ -80,23 +81,42 @@ def search_on_ultimate_guitare(artist, title):
 def extract_chords(sample_data):
     out = []
     i = 0
-    for artist, title, hotness, hotness_class in sample_data:
+    for id_, artist, title, hotness, hotness_class in sample_data:
         print(str(i))
         i += 1
         artist = artist.decode('utf-8')
         title = title.decode('utf-8')
-        search_result = search_on_ultimate_guitare(artist, title)
+        try:
+            search_result = search_on_ultimate_guitare(artist, title)
+        except Exception as e:
+            print(str(e))
+            continue
         if search_result is None:
             print('{0} - {1} was not found'.format(artist, title))
         else:
-            chords = get_chords(search_result)
+            try:
+                chords = get_chords(search_result)
+            except Exception as e:
+                print(str(e))
+                continue
             if not chords:
                 print('unable to extract chords for: ' + search_result)
             else:
-                out.append((artist, title, hotness, hotness_class, chords))
+                out.append((id_, artist, title, hotness, hotness_class, chords))
 
     return out
 
 
+def load_data(path, name):
+    with open(path + name, 'rb') as f:
+        data = pickle.load(f, encoding='latin1')
+    return data
+
+
 if __name__ == '__main__':
-    get_chords_and_lyrics('https://tabs.ultimate-guitar.com/tab/la_roux/quicksand_chords_845910')
+    data = load_data('cluster_out/name_sampling/', 'name_sampling')
+    print('Total data length: ' + str(len(data)))
+    out = extract_chords(data)
+    # out = []
+    with open("cluster_out/name_sampling/scrapped_data", 'wb') as out_file:
+        pickle.dump(out, out_file)
