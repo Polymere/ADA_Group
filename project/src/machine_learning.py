@@ -1,7 +1,8 @@
-from pyspark.mllib.linalg import Vectors
 from pyspark.mllib.regression import LabeledPoint, LinearRegressionWithSGD
 import numpy as np
 from pyspark import RDD
+from cluster_utils import get_rdd
+from pyspark import SparkContext
 
 
 def get_metadata_features(analysis_songs_rdd, metadata_songs_rdd):
@@ -79,3 +80,15 @@ def classify(dataframe, nb_class=10):
         return float(int(label / (1.0 / nb_class))) / nb_class
 
     return dataframe.map(lambda x: LabeledPoint(_helper(x.label, nb_class), x.features))
+
+
+if __name__ == '__main__':
+    sc = SparkContext()
+    hotness, analysis_features = get_metadata_features(get_rdd(sc, 'analysis-songs'), get_rdd(sc, 'metadata-songs'))
+    pitch_rdd = get_pitch_features(get_rdd(sc, 'analysis-segments_pitches'))
+
+    features = join_features(analysis_features, pitch_rdd)
+    dataframe = build_dataframe(hotness, features)
+    visualize_descent(
+        lambda data, weights: LinearRegressionWithSGD.train(data, iterations=10, step=0.000001, initialWeights=weights),
+        dataframe, 100)
