@@ -25,6 +25,7 @@ def map_rdd_tags(sc):
     f = f.join(weight)
 
     joined = f.join(year).join(hotness)
+    
     by = joined.map(
         lambda x: (x[1][0][1], x[1][0][0][0], x[1][0][0][1], x[1][1], x[0]))  # year,array tags,array weight, hotness
     print(by.first())
@@ -68,6 +69,7 @@ def get_vector(rdd, terms):
 
 def get_vector_terms(sc):#, year=0, hotness=0, n_terms=50):
     rdd = map_rdd_tags(sc)
+    rdd.cache()
     #if year != 0:
      #   rdd = filter_year(rdd, year)
     #if hotness != 0:
