@@ -61,7 +61,7 @@ def get_vector_terms(year=0,hotness=0,n_terms=50):
     if hotness !=0:
         rdd=filter_hotness(rdd,hotness)
     tags=count_tags_weight(rdd)
-    most_freq=d[:n_terms]
+    most_freq=tags[:n_terms]
     lst=[]
     for i in most_freq:
         lst.append(i[0])
