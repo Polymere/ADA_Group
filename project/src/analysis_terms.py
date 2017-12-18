@@ -30,7 +30,7 @@ def map_rdd_tags(sc):
 
 
 def count_tags_weight(rdd):
-    s = rdd.flatMap(lambda x: [(x[1][i], x[2][i]) for i in range(len(x[1]))]).reduceByKey(add)
+    s=rdd.flatMap(lambda x: [(x[1][i], x[2][i]) for i in range(len(x[1]))]).reduceByKey(add)
     c = s.collect()
     return sorted(c, key=lambda x: x[1], reverse=True)
 
@@ -62,8 +62,7 @@ def get_n_tags(rdd, n):
 
 
 def get_vector(rdd, terms):
-    return rdd.map(lambda x: (x[4], [i in terms for i in x[1]]))
-
+    return rdd.map(lambda x:(x[4],[i in terms for i in x[1]]))
 
 def get_vector_terms(sc, year=0, hotness=0, n_terms=50):
     rdd = map_rdd_tags(sc)
