@@ -2,8 +2,6 @@ from pyspark import RDD
 from pyspark import SparkContext
 from operator import add
 
-
-
 def map_rdd_tags():
     genre_rdd=sc.pickleFile("../data/metadata-artist_terms/")
     #
@@ -31,9 +29,8 @@ def count_tags_weight(rdd):
     c=s.collect()
     return sorted(c,key=lambda x:x[1],reverse=True)
 
- def filter_year(rdd,year):
+def filter_year(rdd,year):
     return rdd.filter(lambda x:x[0]==year)
-
 
 def filter_hotness(rdd,hotness):
     return rdd.filter(lambda x : x[3]>=hotness)
@@ -54,20 +51,19 @@ def get_n_tags(rdd,n):
     cutted=dropped.map(lambda x:(x[0],x[1][:n],x[2][:n],x[3]))
     return cutted
 
-
 def get_vector(rdd, terms):
-    return rdd.map(lambda x:(x[4][i in terms for i in x[1]]))
+    return rdd.map(lambda x:(x[4],[i in terms for i in x[1]]))
 
 def get_vector_terms(year=0,hotness=0,n_terms=50):
     rdd=map_rdd_tags()
-    if  year~=0 :
+    if  year!=0 :
         rdd=filter_year(rdd,year)
-    if hotness ~=0:
+    if hotness !=0:
         rdd=filter_hotness(rdd,hotness)
     tags=count_tags_weight(rdd)
     most_freq=d[:n_terms]
     lst=[]
     for i in most_freq:
         lst.append(i[0])
-   return lst,get_vector(rdd,lst)
+    return lst,get_vector(rdd,lst)
    
