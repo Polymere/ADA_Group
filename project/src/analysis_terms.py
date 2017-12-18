@@ -30,7 +30,7 @@ def map_rdd_tags(sc):
 
 
 def count_tags_weight(rdd):
-    s = rdd.flatMap(lambda x: [(x[1][i], x[2][i]) for i in range(len(x[1]))]).reduceByKey(add)
+    s=rdd.flatMap(lambda x: [(x[1][i], x[2][i]) for i in range(len(x[1]))]).reduceByKey(add)
     c = s.collect()
     return sorted(c, key=lambda x: x[1], reverse=True)
 
@@ -62,21 +62,7 @@ def get_n_tags(rdd, n):
 
 
 def get_vector(rdd, terms):
-<<<<<<< HEAD
     return rdd.map(lambda x:(x[4],[i in terms for i in x[1]]))
-
-def get_vector_terms(year=0,hotness=0,n_terms=50):
-    rdd=map_rdd_tags()
-    if  year!=0 :
-        rdd=filter_year(rdd,year)
-    if hotness !=0:
-        rdd=filter_hotness(rdd,hotness)
-    tags=count_tags_weight(rdd)
-    most_freq=tags[:n_terms]
-    lst=[]
-=======
-    return rdd.map(lambda x: (x[4], [i in terms for i in x[1]]))
-
 
 def get_vector_terms(sc, year=0, hotness=0, n_terms=50):
     rdd = map_rdd_tags(sc)
@@ -87,7 +73,6 @@ def get_vector_terms(sc, year=0, hotness=0, n_terms=50):
     tags = count_tags_weight(rdd)
     most_freq = tags[:n_terms]
     lst = []
->>>>>>> f371f684b59bd1e6354fc27d24a17bcdd3ce3168
     for i in most_freq:
         lst.append(i[0])
     return lst, get_vector(rdd, lst)
