@@ -138,11 +138,11 @@ def vectorize_lyrics(lyrics_rdd, musicbrainz_rdd):
     total_occ = rdd.map(lambda x: (x[0], x[1]["words"])).aggregate({}, aggWordCount, combResults)
     filtered_total_occ = filter_occ_totals(total_occ)
     
-    sorted_keys = sorted(filtered_cnts, key=filtered_cnts.get, reverse=True)
+    sorted_keys = sorted(filtered_total_occ, key=filtered_total_occ.get, reverse=True)
     most_represented_keys = sorted_keys[:LYRICS_VECTOR_SIZE]
     
     vectorized_rdd = rdd.map(map_song_to_vector(most_represented_keys))
-    return vectorized_rdd
+    return most_represented_keys, vectorized_rdd
 
 if __name__ == "__main__":
     sc = SparkContext(appName="Vectorize lyrics")
