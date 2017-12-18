@@ -1,4 +1,5 @@
 from pyspark import SparkContext
+from pyspark import RDD
 from operator import add
 from cluster_utils import get_rdd
 import pickle
@@ -26,6 +27,7 @@ def map_rdd_tags(sc):
     joined = f.join(year).join(hotness)
     by = joined.map(
         lambda x: (x[1][0][1], x[1][0][0][0], x[1][0][0][1], x[1][1], x[0]))  # year,array tags,array weight, hotness
+    print(by.first())
     return joined, by
 
 
@@ -64,14 +66,14 @@ def get_n_tags(rdd, n):
 def get_vector(rdd, terms):
     return rdd.map(lambda x:(x[4],[i in terms for i in x[1]]))
 
-def get_vector_terms(sc, year=0, hotness=0, n_terms=50):
+def get_vector_terms(sc):#, year=0, hotness=0, n_terms=50):
     rdd = map_rdd_tags(sc)
-    if year != 0:
-        rdd = filter_year(rdd, year)
-    if hotness != 0:
-        rdd = filter_hotness(rdd, hotness)
+    #if year != 0:
+     #   rdd = filter_year(rdd, year)
+    #if hotness != 0:
+    #    rdd = filter_hotness(rdd, hotness)
     tags = count_tags_weight(rdd)
-    most_freq = tags[:n_terms]
+    most_freq = tags[:50]
     lst = []
     for i in most_freq:
         lst.append(i[0])
