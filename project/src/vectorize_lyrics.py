@@ -1,5 +1,5 @@
 from pyspark import SparkContext
-from clusterutils import get_rdd
+from cluster_utils import get_rdd
 
 # The amount of vector features to extract
 # (this is in fact the number of most occuring words and the number of occurences)
@@ -131,7 +131,7 @@ def map_song_to_vector(keys_list):
 
 def vectorize_lyrics(lyrics_rdd, musicbrainz_rdd):
     # Map and join
-    mbz_rdd = musicbrainz_rdd.map(lambda x: (x[0], {'year': x[1]['year'][0]})
+    mbz_rdd = musicbrainz_rdd.map(lambda x: (x[0], {'year': x[1]['year'][0]}))
     rdd = lyrics_rdd.join(mbz_rdd).map(lambda x: (x[0], flattenDicts(x[1])))
     
     # Calculate
