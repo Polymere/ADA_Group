@@ -1,4 +1,5 @@
 from pyspark import SparkContext
+from pyspark import RDD
 from operator import add
 from cluster_utils import get_rdd
 import pickle
