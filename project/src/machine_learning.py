@@ -4,40 +4,29 @@ import numpy as np
 from pyspark import RDD
 
 
-def format_metadata_features(analysis_songs_rdd, metadata_songs_rdd, music_brainz_rdd):
+def get_metadata_features(analysis_songs_rdd, metadata_songs_rdd):
     analysis_features = analysis_songs_rdd. \
         map(lambda x: (x[0],
-                       (
-                           x[1]['danceability'][0],
+                       [
                            x[1]['duration'][0],
-                           x[1]['energy'][0],
                            x[1]['key'][0],
                            x[1]['loudness'][0],
                            x[1]['tempo'][0],
                            x[1]['time_signature'][0]
-                       ))
-            )
-    metadata_features = metadata_songs_rdd. \
-        map(lambda x: (x[0],
-                       (
-                           x[1]['artist_latitude'][0],
-                           x[1]['artist_longitude'][0]
-                       ))
-            )
-    musicbrainz_features = music_brainz_rdd. \
-        map(lambda x: (x[0],
-                       (
-                           x[1]['year'][0],
-                       ))
+                       ])
             )
 
     hotness = metadata_songs_rdd.map(lambda x: (x[0], x[1]['song_hotttnesss'][0]))
 
-    return hotness, join_features(join_features(analysis_features, metadata_features), musicbrainz_features)
+    return hotness, analysis_features
 
 
 def join_features(feat1, feat2):
     return feat1.join(feat2).map(lambda x: (x[0], x[1][0] + x[1][1]))
+
+
+def get_pitch_features(segments_pitches_rdd):
+    return segments_pitches_rdd.map(lambda x: (x[0], [i for i in np.ravel(np.mean(x[1], axis=0))]))
 
 
 def build_dataframe(hotness, features):
@@ -47,18 +36,11 @@ def build_dataframe(hotness, features):
     :type features: RDD
     :return: RDD
     """
-    hotness = hotness.filter(lambda x: not np.isnan(x[1]))
+    hotness = hotness.filter(lambda x: not np.isnan(x[1]) and not x[1] == 0)
+    features.map(lambda x: (x[0], [0.0 if np.isnan(i) else float(i) for i in x[1]]))
     rdd = hotness.join(features)
-    rdd = rdd.map(lambda x: LabeledPoint(float(x[1][0]), _transforme_type_for_dataframe(x[1][1])))
+    rdd = rdd.map(lambda x: LabeledPoint(float(x[1][0]), x[1][1]))
     return rdd
-
-
-def _transforme_type_for_dataframe(x):
-    arr = np.array(x)
-    nan = np.isnan(arr)
-    zeros = np.logical_or(arr == 0.0, arr == 0)
-    arr[nan] = 0.0
-    return [float(i) for i in np.concatenate((arr, nan, zeros))]
 
 
 def cross_validation(dataframe, algorithm, ratio=0.8, nb_validation=8, seed=0):
@@ -87,7 +69,7 @@ def visualize_descent(algorithm, dataframe, iterations=100):
         model = algorithm(dataframe, weights)
         weights = model.weights
         rmse = rmse_error(model, dataframe)
-        print("iteration: {0}, rmse: {1}".format(str(i+1), str(rmse)))
+        print("iteration: {0}, rmse: {1}".format(str(i + 1), str(rmse)))
         out.append(rmse)
     return out, weights
 

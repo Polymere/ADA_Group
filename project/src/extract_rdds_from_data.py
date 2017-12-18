@@ -1,4 +1,4 @@
-from read_data import Read
+from src.read_data import Read
 import sys
 import re
 import os
