@@ -27,7 +27,8 @@ def get_summer_hit_rdd(sc):
     hit_rdd=get_hit_rdd(sc)
     #rank,title(already transformed)
     hit_rdd=hit_rdd.map(lambda x:(x[1],x[0]))
-    return tra.join(hit_rdd).map(lambda x:(x[1][0],x[1][1]))
+    
+    return 
                     #id,rank
 
 if __name__ == '__main__':
