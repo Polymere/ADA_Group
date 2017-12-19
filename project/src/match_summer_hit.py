@@ -18,6 +18,7 @@ def get_title_rdd(sc):
     return rdd.map(lambda x: (x[0],x[1][0][9]))
 
 def get_summer_hit_rdd(sc):
+    sc.addPyFile("pandas.zip")
     rdd=get_title_rdd(sc)
     path_to_csv='../data/hits_clean.csv'
     df=pd.read_csv(path_to_csv,sep=';')
