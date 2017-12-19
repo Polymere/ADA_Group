@@ -28,7 +28,7 @@ def map_rdd_tags(sc):
     
     by = joined.map(
         lambda x: (x[1][0][1], x[1][0][0][0], x[1][0][0][1], x[1][1], x[0]))  # year,array tags,array weight, hotness
-    print(by.first())
+    #print(by.first())
     return by
 
 
@@ -65,7 +65,7 @@ def get_n_tags(rdd, n):
 
 
 def get_vector(rdd, terms):
-    return rdd.map(lambda x:(x[4],[i in terms for i in x[1]]))
+    return rdd.map(lambda x:(x[4],[i in x[1] for i in terms]))
 
 def get_vector_terms(sc):#, year=0, hotness=0, n_terms=50):
     rdd = map_rdd_tags(sc)
