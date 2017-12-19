@@ -1,3 +1,13 @@
+"""
+[This file is intended to be submitted as a job to Apache Spark]
+
+This file is a pipelined version of project/notebooks/Lyrics_analysis.ipynb 
+for more details, please have a look over there. The final vectorization part
+is not present there though.
+
+This file transforms a list of words 
+"""
+
 from pyspark import SparkContext
 from cluster_utils import get_rdd
 
@@ -61,6 +71,9 @@ stemmed_stop_words = ['onli', 'whi', 'somethi']
 #  --------------------------
 
 def flattenDicts(ls):
+    """This methods merges dictionaries that are present in a list.
+    If the same key is present multiple times, the value of the last 
+    dictionary to have this key will be kept."""
     if len(ls) > 1:
         acc = ls[0].copy()
         for x in ls[1:]:
@@ -70,6 +83,9 @@ def flattenDicts(ls):
         return ls[0]
 
 def aggWordCount(localRes, newElem):
+    """This method aggregates a local result (a dictionary of word counts) 
+    together with a datapoint (a list of word occurences for a song) and
+    adds the occurences of the song to the local result."""
     if len(localRes) == 0:
         res = {}
         for (k, v) in newElem[1]:
@@ -84,6 +100,8 @@ def aggWordCount(localRes, newElem):
         return localRes
 
 def combResults(a, b):
+    """This method combines 2 local results (dictionaries of word counts)
+    together to form a single one."""
     if len(a) == 0:
         return b
     else:
@@ -98,6 +116,8 @@ def combResults(a, b):
         return res
 
 def filter_occ_totals(occurences):
+    """Removes all words from the total occurences dictionary that are 
+    in the stop words list or in the additionnal words list."""
     acc = {}
 
     for k in occurences:
@@ -107,9 +127,19 @@ def filter_occ_totals(occurences):
     return acc
 
 def map_song_to_vector(keys_list):
+    """This method transform an RDD element into a vector.
+    It uses a list of words `keys_list` which determines which words'
+    occurrence get added to the vector. If the word does not have any 
+    occurrence in the current song, this script will add an occurrence 
+    count of 0."""
+    
+    # Building a function that is returned to hack around the fact
+    # that keys_list used to be a global variable
     def fn(x):
         vector = []
 
+        #   keys_list is used here
+        #        vvvvvvvvv
         for k in keys_list:
             found = False
             for w, occ in x[1]["words"]:
@@ -130,19 +160,27 @@ def map_song_to_vector(keys_list):
 #  --------------------------
 
 def vectorize_lyrics(lyrics_rdd, musicbrainz_rdd):
+    """Main function that applies all of the operations to transform two RDDs into a vectorized one."""
     # Map and join
     mbz_rdd = musicbrainz_rdd.map(lambda x: (x[0], {'year': x[1]['year'][0]}))
     rdd = lyrics_rdd.join(mbz_rdd).map(lambda x: (x[0], flattenDicts(x[1])))
     
-    # Calculate
+    # Calculate the totals
     total_occ = rdd.map(lambda x: (x[0], x[1]["words"])).aggregate({}, aggWordCount, combResults)
     filtered_total_occ = filter_occ_totals(total_occ)
     
+    # Find most prevalent words
     sorted_keys = sorted(filtered_total_occ, key=filtered_total_occ.get, reverse=True)
+    # Get the N=LYRICS_VECTOR_SIZE best
     most_represented_keys = sorted_keys[:LYRICS_VECTOR_SIZE]
     
+    # Vectorize the RDD with those words
     vectorized_rdd = rdd.map(map_song_to_vector(most_represented_keys))
+    
+    # Return the list of words to map it back for predictions as well
+    # as the vectorized RDD
     return most_represented_keys, vectorized_rdd
+
 
 if __name__ == "__main__":
     sc = SparkContext(appName="Vectorize lyrics")
@@ -153,5 +191,5 @@ if __name__ == "__main__":
     lst, rdd = vectorize_lyrics(lyrics_rdd, mbz_rdd)
     rdd.saveAsPickleFile('hdfs:///user/weiskopf/lyrics_features')
     
-    with open('/buffer/mrp_buffer/lyrics_features_list.pickle', 'wb') as f:
+    with open('/buffer/mrp_buffer/lyrics_features_list.pickle', 'w') as f:
         pickle.dump(lst, f)
