@@ -30,5 +30,5 @@ def get_summer_hit_rdd(sc):
 if __name__ == '__main__':
     sc = SparkContext()
     rdd =  get_summer_hit_rdd(sc)
-    rdd.saveAsPickleFile('hdfs:///user/adams/hits_key_rank')
+    rdd.saveAsPickleFile('hdfs:///user/prevel/hits_key_rank')
             
