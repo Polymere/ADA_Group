@@ -65,15 +65,15 @@ def get_n_tags(rdd, n):
 
 
 def get_vector(rdd, terms):
-    return rdd.map(lambda x:(x[4],[i in terms for i in x[1]]))
+    return rdd.map(lambda x:(x[4],[i in x[1] for i in terms]))
 
-def get_vector_terms(sc):#, year=0, hotness=0, n_terms=50):
+def get_vector_terms(sc, year=0, hotness=0, n_terms=50):
     rdd = map_rdd_tags(sc)
     rdd.cache()
-    #if year != 0:
-     #   rdd = filter_year(rdd, year)
-    #if hotness != 0:
-    #    rdd = filter_hotness(rdd, hotness)
+    if year != 0:
+        rdd = filter_year(rdd, year)
+    if hotness != 0:
+        rdd = filter_hotness(rdd, hotness)
     tags = count_tags_weight(rdd)
     most_freq = tags[:50]
     lst = []
