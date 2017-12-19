@@ -1,5 +1,5 @@
 from cluster_utils import get_rdd
-import pandas as pd
+#import pandas as pd
 from pyspark import SparkContext
 from pyspark import RDD
 
@@ -16,17 +16,19 @@ def transform_names(string):
 def get_title_rdd(sc):
     rdd=get_rdd('musicbrainz-songs',sc)
     return rdd.map(lambda x: (x[0],x[1][0][9]))
+def get_hit_rdd(sc):
+    return sc.pickleFile('~/ADA_Group/project/new_pickle_hit')
 
 def get_summer_hit_rdd(sc):
-    sc.addPyFile("pandas.zip")
-    rdd=get_title_rdd(sc)
-    path_to_csv='../data/hits_clean.csv'
-    df=pd.read_csv(path_to_csv,sep=';')
-    for i in df.index:
-        df.Title[i]=transform_names(df.Title[i])
-    fil=rdd.filter(lambda x:(transform_names(x[1]) in df.Title.values))
-    fil=fil.map(lambda x:(x[0],df[df.Title==transform_names(x[1])].Rank))
-    return fil.map(lambda x:(x[0],x[1].iloc[0]))
+    id_title=get_title_rdd(sc)
+    #id,title
+    tra=id_title.map(lambda x:(transform_names(x[1]),x[0]))
+    #transformed title,id
+    hit_rdd=get_hit_rdd(sc)
+    #rank,title(already transformed)
+    hit_rdd=hit_rdd.map(lambda x:(x[1],x[0]))
+    return tra.join(hit_rdd).map(lambda x:(x[1][0],x[1][1]))
+                    #id,rank
 
 if __name__ == '__main__':
     sc = SparkContext()

@@ -28,7 +28,7 @@ def map_rdd_tags(sc):
     
     by = joined.map(
         lambda x: (x[1][0][1], x[1][0][0][0], x[1][0][0][1], x[1][1], x[0]))  # year,array tags,array weight, hotness
-    print(by.first())
+    #print(by.first())
     return by
 
 
