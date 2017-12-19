@@ -35,6 +35,7 @@ def map_rdd_tags(sc):
 def count_tags_weight(rdd):
     s=rdd.flatMap(lambda x: [(x[1][i], x[2][i]) for i in range(len(x[1]))]).reduceByKey(add)
     c = s.collect()
+    print(len(c))
     return sorted(c, key=lambda x: x[1], reverse=True)
 
 
