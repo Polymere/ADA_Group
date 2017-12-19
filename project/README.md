@@ -1,33 +1,35 @@
-# Generating the new summer hit !
+# Predicting the next big song hit, what is at the heart of a song?
 
 # Abstract
 
 Using the Million song dataset and its complements, we want to find the relation between a song structure/audio features/lyrics and its "hotness".
 
-We want to be able to predict the new summer hit features and find the recipe of success.
-The information extracted could be used to get an overview of the different trends and evolutions of the music production, as well as the characteristics of the music genres.
+What features of a song makes it so catchy? Is it possible to predict if a song will be popular or not? Our main investigation is finding a modal
+to be able to predict if a song is a popular or not. Such a modal could then be used to predict the next hit song.
 
 
 # Research questions
 
-- How do the song style change with respect to the release month ?
-- Can we extract a relation between the lyrics (vocabulary, emotions) and the audio features (beat, danceability) ?
-- Can we predict the next hit based on the previous popular songs ?
+- What features can we use to characterise a song?
+- How do these features correlate with the hotness?
+- How to process the features?
 - Are there universal features that make a song popular ?
-- Are there features that characterise a genre or an artist ?
 
 # Dataset
 
-We will use [the Million song](https://labrosa.ee.columbia.edu/millionsong/) dataset for the core metadata, the [musiXmatch](https://labrosa.ee.columbia.edu/millionsong/musixmatch) dataset for the lyrics, the [tagtraum genre annotations](http://www.tagtraum.com/msd_genre_datasets.html) and [Top MAGD](http://www.ifs.tuwien.ac.at/mir/msd/)  for the music genres.
+We use the [the Million song](https://labrosa.ee.columbia.edu/millionsong/) dataset for the core metadata, and the [musiXmatch](https://labrosa.ee.columbia.edu/millionsong/musixmatch) dataset for the lyrics.
 
-As for the dataset size, we will start working with the given subsamble (10 000 songs) to get an overview of the needed data cleaning operations, before using the cluster for the full dataset.
+# File structure of the project
 
+- the main report is at the root at the project, it's the report.pdf file.
+- the 'src' directory contain all of our main python scripts
+- the 'cluster_out' directory contain the pickle files we downloaded from the cluster and that we use in our notebooks
+- the 'notebooks' directory contains experimental notebooks we used during the project
+- the 'papers' directory contains papers we used in our research
+- the 'images' directory contains an image we needed for our wordcloud
 
-# A list of internal milestones up until project milestone 2
-- Implement the data cleaning operations on the subsample
-- Merge all the needed data from the different datasets
-- Try different analysis approaches 
-- Have a debugged/cleaned pipeline in prevision of milestone 3 
+# Contribution to the project
 
-# Questions for TAa
-NaN
+Robin Weiskopf: lyrics analysis, lyrics vectorisation, wordcloud, writing the report
+Paul Prevel: tag analysis, tag vectorisation, billboard analysis, writing the report
+Marc Adams: histogram plots, correlation analysis, linear regression, extracting rdds on the cluster, writing the report
