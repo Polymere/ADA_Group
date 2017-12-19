@@ -25,13 +25,20 @@ def format_labels(labels):
     return [format(i, '.2e') for i in labels]
 
 
-def print_sampled_points(sampled_points, title=""):
-    x = [i[0] for i in sampled_points['points']]
-    y = [i[1] for i in sampled_points['points']]
-    fig = plt.figure()
+def print_sampled_points(sampled_points, title="", x_label="", y_label="", figsize=(8, 6), dpi=80):
+    _list = list(sampled_points['points'])
+    _list.sort(key=lambda x: x[0])
+    x = np.array([i[0] for i in _list])
+    y = np.array([i[1] for i in _list])
+    A = np.vstack([x, np.ones(len(x))]).T
+    m, c = np.linalg.lstsq(A, y)[0]
+    fig = plt.figure(figsize=figsize, dpi=dpi)
     ax = fig.add_subplot(111)
     ax.plot(x, y, '.')
+    ax.plot(x, m * x + c, 'r', label='Fitted line')
     ax.set_title(title)
+    ax.set_xlabel(x_label)
+    ax.set_ylabel(y_label)
     plt.show()
 
 
