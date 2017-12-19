@@ -30,6 +30,6 @@ We use the [the Million song](https://labrosa.ee.columbia.edu/millionsong/) data
 
 # Contribution to the project
 
-Robin Weiskopf: lyrics analysis, lyrics vectorisation, wordcloud, writing the report
-Paul Prevel: tag analysis, tag vectorisation, billboard analysis, writing the report
-Marc Adams: histogram plots, correlation analysis, linear regression, extracting rdds on the cluster, writing the report
+- Robin Weiskopf: lyrics analysis, lyrics vectorisation, wordcloud, writing the report
+- Paul Prevel: tag analysis, tag vectorisation, billboard analysis, writing the report
+- Marc Adams: histogram plots, correlation analysis, linear regression, extracting rdds on the cluster, writing the report
