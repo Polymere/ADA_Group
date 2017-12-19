@@ -20,7 +20,7 @@ def get_title_rdd(sc):
 def get_summer_hit_rdd(sc):
     rdd=get_title_rdd(sc)
     path_to_csv='../data/hits_clean.csv'
-    df=pd.read_csv(path,sep=';')
+    df=pd.read_csv(path_to_csv,sep=';')
     for i in df.index:
         df.Title[i]=transform_names(df.Title[i])
     fil=joined.filter(lambda x:(transform_names(x[1]) in df.Title.values))
