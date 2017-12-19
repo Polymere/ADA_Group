@@ -23,11 +23,20 @@ def get_summer_hit_rdd(sc):
     id_title=get_title_rdd(sc)
     #id,title
     tra=id_title.map(lambda x:(transform_names(x[1]),x[0]))
+    tra_rdd.first()
     #transformed title,id
     hit_rdd=get_hit_rdd(sc)
     #rank,title(already transformed)
-    hit_rdd=hit_rdd.map(ambda x:(x[0],x[0]))
-    return tra.join(hit_rdd).map(lambda x:(x[1][0],x[1][1]))
+    hit_rdd=hit_rdd.map(lambda x:(x[1],x[0]))
+    hit_rdd.first()
+    #title rank
+    joined=tra.join(hit_rdd)
+    #title(id,rank)
+    unique=joined.groupByKey().distinct()
+    unique=unique.map(lambda x:(x[1].data[0][0],x[1].data[0][1]))
+    lstID=unique.collect()
+    print(length(lstID))
+    return unique
                     #id,rank
 
 if __name__ == '__main__':
