@@ -23,7 +23,7 @@ def get_summer_hit_rdd(sc):
     df=pd.read_csv(path_to_csv,sep=';')
     for i in df.index:
         df.Title[i]=transform_names(df.Title[i])
-    fil=joined.filter(lambda x:(transform_names(x[1]) in df.Title.values))
+    fil=rdd.filter(lambda x:(transform_names(x[1]) in df.Title.values))
     fil=fil.map(lambda x:(x[0],df[df.Title==transform_names(x[1])].Rank))
     return fil.map(lambda x:(x[0],x[1].iloc[0]))
 
