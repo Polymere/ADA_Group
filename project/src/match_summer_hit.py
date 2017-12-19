@@ -14,10 +14,10 @@ def transform_names(string):
     return out
 
 def get_title_rdd(sc):
-    rdd=get_rdd('musicbrainz-songs',sc)
-    return rdd.map(lambda x: (x[0],x[1][0][9]))
+    rdd=get_rdd('metadata-songs',sc)
+    return rdd.map(lambda x: (x[0],x[1][0][18]))
 def get_hit_rdd(sc):
-    return sc.pickleFile('~/ADA_Group/project/new_pickle_hit')
+    return sc.pickleFile('hdfs:///user/prevel/new_pickle_hit')
 
 def get_summer_hit_rdd(sc):
     id_title=get_title_rdd(sc)
@@ -26,7 +26,7 @@ def get_summer_hit_rdd(sc):
     #transformed title,id
     hit_rdd=get_hit_rdd(sc)
     #rank,title(already transformed)
-    hit_rdd=hit_rdd.map(lambda x:(x[1],x[0]))
+    hit_rdd=hit_rdd.map(ambda x:(x[0],x[0]))
     return tra.join(hit_rdd).map(lambda x:(x[1][0],x[1][1]))
                     #id,rank
 
