@@ -13,7 +13,7 @@ def transform_names(string):
 
 def get_title_rdd(sc):
     rdd=get_rdd('musicbrainz-songs',sc)
-   return rdd.map(lambda x: (x[0],x[1][0][9]))
+    return rdd.map(lambda x: (x[0],x[1][0][9]))
 
 def get_summer_hit_rdd(sc):
     rdd=get_title_rdd(sc)
